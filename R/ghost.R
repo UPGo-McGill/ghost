@@ -460,13 +460,8 @@ ghost_make_tidy <- function(ghost_points, start = start_date, end = end_date){
 
 ## 3. MAIN FUNCTION TO CREATE GHOST HOTELS -------------------------------------
 
-str_ghost <- function(
-  points,
-  distance = 200,
-  min_listings = 3,
-  start_date = "2017-11-01",
-  end_date = "2018-10-31",
-  cores = 1) {
+str_ghost <- function(points, start_date, end_date, distance = 200,
+                      min_listings = 3, cores = 1) {
   
   library(sf)
   library(data.table)
@@ -474,6 +469,37 @@ str_ghost <- function(
   if (cores >= 2) library(parallel)
   if (cores >= 2) library(pbapply)
   
+  # Check that cores is an integer > 0
+  cores <- floor(cores)
+  if (cores <= 0) {
+    stop("The argument `cores` must be a positive integer.")
+  }
+  
+  # Check that distance > 0
+  if (distance <= 0) {
+    stop("The argument `distance` must be a positive number.")
+  }
+  
+  # Check that min_listings is an integer > 0
+  min_listings <- floor(min_listings)
+  if (min_listings <= 0) {
+    stop("The argument `min_listings` must be a positive integer.")
+  }
+  
+  # Convert pointsfrom sp
+  if (is(points, "Spatial")) {
+    points <- st_as_sf(points)
+  }
+  
+  # Check that points is sf
+  if (is(points, "sf") == FALSE) {
+    stop("The object `points` must be of class sf or sp.")
+  }
+  
+  # Convert points to tibble
+  points <- as_tibble(points) %>% st_as_sf()
+  
+  # Convert start_date and end_date to date class
   start_date <- as.Date(start_date)
   end_date <- as.Date(end_date)
   
